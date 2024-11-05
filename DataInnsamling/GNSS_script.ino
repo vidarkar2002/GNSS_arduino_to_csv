@@ -4,8 +4,8 @@
 SoftwareSerial mySerial(3, 4); // RX, TX
 Adafruit_GPS GPS(&mySerial);
 
-unsigned long lastTime = 0;  // Variable to store the last time a message was sent
-const unsigned long interval = 1000;  // Interval in milliseconds (1 second)
+unsigned long lastTime = 0;
+const unsigned long interval = 1000;  // 1 sekkund
 
 void setup() {
   Serial.begin(115200);
@@ -14,7 +14,7 @@ void setup() {
 
   Serial.println("Waiting for GPS fix...");
 
-  // Set up the GPS to output RMC and GGA sentences every second
+  // GPS output RMC og GGA 1 gang per sekund
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
 
@@ -26,22 +26,21 @@ void loop() {
   if (c) Serial.print(c);
 
   if (GPS.newNMEAreceived()) {
-    if (!GPS.parse(GPS.lastNMEA())) return;  // Skip if the sentence is invalid
+    if (!GPS.parse(GPS.lastNMEA())) return;  // Skip hvis nan-melding
 
-    // Only print or send data if a fix is available
+    // Printer bare med satelitt fix
     if (GPS.fix) {
-      // Check if 1 second has passed since the last message
-      unsigned long currentTime = millis();
+      unsigned long currentTime = millis(); // klokken
       if (currentTime - lastTime >= interval) {
-        lastTime = currentTime;  // Update the last time a message was sent
+        lastTime = currentTime;
 
-        // Create CSV formatted data
+        // Lager CSV formatert data
         String csvData = String(GPS.latitudeDegrees, 6) + "," +
                          String(GPS.longitudeDegrees, 6) + "," +
                          String(GPS.altitude);
 
-        // Send the CSV data
-        Serial.println(csvData);  // You can modify this line to send the data over another communication interface if needed
+        // Sender CSV data
+        Serial.println(csvData);
       }
     } else {
       Serial.println("Still searching for GPS fix...");
